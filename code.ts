@@ -1,65 +1,78 @@
-function main(){
+figma.showUI(__html__);
+figma.ui.resize(400,300);
 
-  figma.showUI(__html__);
-  figma.ui.resize(400,300);
+let i=0;
+const selection = figma.currentPage.selection.slice();
 
-  let i=0;
-  const selection = figma.currentPage.selection.slice();
+let nodes = [];
+let nodeChilds = [];
+nodes = selection;
 
-  let nodes = [];
-  let nodeChilds = [];
-  nodes = selection;
 
-  if(selection.length == 0){
-    figma.ui.postMessage(-1);
-  }
 
-  let numObjects = 0;
+let numObjects = 0;
 
-  function calcLayer(){
-    setTimeout(() => {
+function calcLayer(){
+  setTimeout(() => {
 
-      nodeChilds = [];
-      for( const node of nodes ){ 
+    nodeChilds = [];
+    for( const node of nodes ){ 
 
-          if ("fills" in node) {
-            const array = node.fills.valueOf();
+        if ("fills" in node) {
+          const array = node.fills.valueOf();
+          const arrayLen = Object.keys(array).length;
 
-            if(Object.keys(array).length > 1){
-              numObjects++;
-              figma.ui.postMessage(numObjects);
+          const newFills = [];
+          
+          // Find the last row in fills that begins from the fill with opacity 1
+          for(const fill of node.fills){
+            if(typeof fill != "string"){
+              if("opacity" in fill){
+
+                if(fill.opacity == 1){
+                  newFills.length = 0;
+                }
+                newFills.push(fill);
+
+              }
             }
-
-            node.fills=[node.fills[ Object.keys(array).length -1 ]];
           }
 
-          if("children" in node){
-            for( const child of node.children){
-              nodeChilds.push(child);
-            }
+          if(arrayLen > newFills.length){
+            numObjects++;
+            figma.ui.postMessage(numObjects);
           }
-        
-      }
 
-      nodes = nodeChilds;
+          node.fills=newFills;
+        }
 
-      if(nodeChilds.length > 0){
-        calcLayer();
-      }
-    }, 1);
-
-  }
-
-  calcLayer();
-
-  // figma.ui.postMessage(numObjects);
-
-  figma.ui.onmessage = (message) => {
-    if(message === "finishProg"){
-      figma.closePlugin();
+        if("children" in node){
+          for( const child of node.children){
+            nodeChilds.push(child);
+          }
+        }
+      
     }
-  }
+
+    nodes = nodeChilds;
+
+    if(nodeChilds.length > 0){
+      calcLayer();
+    }else if(numObjects==0){
+      figma.ui.postMessage(-2);
+    }
+  }, 1);
 
 }
 
-main();
+if(selection.length == 0){
+  figma.ui.postMessage(-1);
+}else{
+  calcLayer();
+}
+
+figma.ui.onmessage = (message) => {
+  if(message === "finishProg"){
+    figma.closePlugin();
+  }
+}

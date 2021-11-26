@@ -20,8 +20,10 @@
             text-decoration: none;
             color: #000;
             font-size: 20px;
-            padding: 20px;
+            padding: 35px;
             box-sizing: border-box;
+
+            text-align: center;
 
         }
 
@@ -47,9 +49,9 @@
 </head>
 <body>
     <a href="#" id="message" onclick="closeWindow()" class="main-window">
-        <div id="fp" class="first-part">Я убрал нижние цветовые профили</div>
+        <div id="fp" class="first-part">Я убрал скрытые цветовые слои</div>
         <div id="nu" class="number">0</div>
-        <div id="sp" class="last-part">объектов обработано</div>
+        <div id="sp" class="last-part">объектов изменено</div>
         <div id="msg" class="postscr">Просто тыкни на меня чтоб закрыть</div>
     </a>
 
@@ -58,31 +60,35 @@
         onmessage = (event) => {
             numObj = event.data.pluginMessage;
             console.log("got this from the plugin code", event.data.pluginMessage)
-            console.log("numobj in", numObj)
-            console.log("numObj out ", numObj)
 
             const fp = document.getElementById("fp");
             const nu = document.getElementById("nu");
             const sp = document.getElementById("sp");
 
+            nu.innerHTML = numObj;
+
+            console.log("num obj type = ", typeof numObj, numObj);
 
             if(numObj==-1){
-                fp.innerHTML = "Ничего не выделено. Выдели объекты, у которых хочешь удалить все нижние цветовые слои.";
+                fp.innerHTML = "Ничего не выделено! ";
+                fp.style.color = "red";
+                nu.innerHTML = "";
+                sp.innerHTML = "Выдели объекты, у которых хочешь удалить скрытые цветовые слои.";
+                sp.style.fontSize = "16px";
             }
 
-            nu.innerHTML = "";
-            sp.innerHTML = "";
+            if(numObj==-2){
+                fp.innerHTML = "Цветовые слои и так все чистые!";
+                fp.style.color = "green";
+                nu.innerHTML = "";
+                sp.innerHTML = "";
+            }
 
-
-
-            const message = document.getElementById("message");
         }
         
         function closeWindow() {
             parent.postMessage({ pluginMessage: 'finishProg' }, '*')
         }
-
-
 
     </script>
 
